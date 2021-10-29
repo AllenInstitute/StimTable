@@ -211,6 +211,7 @@ def TenSessions_tables(exptpath,verbose=False):
     
     data = load_pkl(exptpath)
     session_number = int(data['stage'][-1])
+    print("Session number:  {}".format(session_number))
     twop_frames, twop_vsync_fall, stim_vsync_fall, photodiode_rise = load_sync(exptpath)
 
     session_file = '../session_info/session_SNR_{}_info.h5'.format(session_number)
