@@ -219,7 +219,7 @@ def TenSessions_tables(exptpath,verbose=False):
     
     stim_table = {}
     for stim_name in stim_info.stim_name:
-        stim_table[stim_name] = MovieClips_one_segment_table(data,twop_frames,stim_name,stim_info)
+        stim_table[stim_name] = TenSessions_one_segment_table(data,twop_frames,stim_name,stim_info)
     
     if verbose:
         print(stim_table)
