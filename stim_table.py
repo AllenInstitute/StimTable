@@ -163,6 +163,104 @@ def lsnCS_create_stim_tables(exptpath):
     
     return stim_table
 
+def get_stimulus_index_ten_session(data, stim_name):
+    """Return the index of stimulus in data.
+    Returns the position of the first occurrence of stim_name in data. Raises a
+    KeyError if a stimulus with a name containing stim_name is not found.
+    Inputs:
+        data (dict-like)
+            -- Object in which to search for a named stimulus.
+        stim_name (str)
+    Returns:
+        Index of stimulus stim_name in data.
+    """
+    for i_stim, stim_data in enumerate(data['stimuli']):
+        if stim_name in stim_data['movie_path']:
+            return i_stim
+
+    raise KeyError('Stimulus with stim_name={} not found!'.format(stim_name))
+
+def load_pkl(exptpath, verbose=True):
+    """Load *.pkl file into a DataFrame.
+    Inputs:
+        exptpath (str)
+            -- Directory in which to search for files with *.pkl suffix.
+        verbose (bool)
+            -- Print filename (if found).
+    Returns:
+        DataFrame with contents of  pkl.
+    """
+    # Look for a file with the suffix '_stim.pkl'
+    pklpath = None
+    for f in os.listdir(exptpath):
+        if f.endswith('.pkl'):
+            pklpath = os.path.join(exptpath, f)
+            if verbose:
+                print("Pkl file:", f)
+
+    if pklpath is None:
+        raise IOError(
+            'No files with the suffix _stim.pkl were found in {}'.format(
+                exptpath
+            )
+        )
+
+    return pd.read_pickle(pklpath)
+
+def TenSessions_tables(exptpath,verbose=False):
+    
+    data = load_pkl(exptpath)
+    session_number = int(data['stage'][-1])
+    twop_frames, twop_vsync_fall, stim_vsync_fall, photodiode_rise = load_sync(exptpath)
+
+    session_file = '../session_info/session_SNR_{}_info.h5'.format(session_number)
+    stim_info = pd.read_hdf(session_file)
+    
+    stim_table = {}
+    for stim_name in stim_info.stim_name:
+        stim_table[stim_name] = MovieClips_one_segment_table(data,twop_frames,stim_name,stim_info)
+    
+    if verbose:
+        print(stim_table)
+    
+    return stim_table
+
+def TenSessions_one_segment_table(data,twop_frames,stim_name,info_df):
+    
+    segment_idx = get_stimulus_index_ten_session(data,stim_name) 
+
+    is_stim = np.argwhere((info_df['stim_name'] == stim_name).values)[:,0]
+    #clip_start_frames = info_df['start_frame'].values[is_stim]
+    clip_end_frames = info_df['end_frame'].values[is_stim]
+    num_clips = len(is_stim)
+    
+    timing_table = get_sweep_frames(data,segment_idx)
+    num_segment_frames = len(timing_table)
+
+    stim_table = init_table(twop_frames,timing_table)
+    stim_table['stim_name'] = stim_name
+
+    clip_number = -1 * np.ones((num_segment_frames,))
+    frame_in_clip = -1 * np.ones((num_segment_frames,))
+    curr_clip = 0
+    curr_frame = 0
+    for nf in range(num_segment_frames):
+        if nf == clip_end_frames[curr_clip]:
+            curr_clip += 1
+            curr_frame = 0
+            if curr_clip==num_clips:
+                break
+            
+        clip_number[nf] = curr_clip
+        frame_in_clip[nf] = curr_frame
+        curr_frame += 1
+            
+    stim_table['clip_number'] = clip_number
+    stim_table['frame_in_clip'] = frame_in_clip
+
+    return stim_table
+    
+
 def MovieClips_tables(exptpath,num_train_segments=5,num_test_segments=10,verbose=False):
     
     data = load_stim(exptpath)
