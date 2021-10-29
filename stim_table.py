@@ -709,7 +709,7 @@ def load_sync(exptpath, verbose=True):
     # verify that sync file exists in exptpath
     syncpath = None
     for f in os.listdir(exptpath):
-        if f.endswith('_sync.h5'):
+        if f.endswith('_sync.h5') or f.endswith('.h5'):
             syncpath = os.path.join(exptpath, f)
             if verbose:
                 print("Sync file:", f)
