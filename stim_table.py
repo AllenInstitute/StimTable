@@ -9,6 +9,7 @@ import numpy as np
 from numpy.core.numeric import full
 import pandas as pd
 import matplotlib.pyplot as plt
+from pandas.core import frame
 # from compute_session_info import compute_session_info
 
 from sync_py3 import Dataset
@@ -253,45 +254,57 @@ def stim_name_parse(stim_name):
 
 def TenSessions_one_segment_table(data,twop_frames,stim_name,session_number, info_df):
     
+    
+
     segment_idx = get_stimulus_index_ten_session(data,stim_name) 
 
-    is_stim = np.argwhere((info_df['stim_name'] == stim_name).values)[:,0]
-    #clip_start_frames = info_df['start_frame'].values[is_stim]
-    clip_end_frames = info_df['end_frame'].values[is_stim]
-    num_clips = len(is_stim)
+    frame_array = np.array(data['stimuli'][segment_idx]['frame_list'])
+
+    # TODO:  add tests that frame_array is of the expected form
+
+    frame_array = frame_array[frame_array!=-1][::2]
+
+    # is_stim = np.argwhere((info_df['stim_name'] == stim_name).values)[:,0]
+    # clip_start_frames = info_df['start_frame'].values[is_stim]
+    # clip_end_frames = info_df['end_frame'].values[is_stim]
+    # num_clips = len(is_stim)
 
     # assert num_clips==1, "num_clips is not 1 for {}".format(stim_name)
     
     timing_table = get_sweep_frames(data,segment_idx)
-    num_segment_frames = len(timing_table)
+    # num_segment_frames = len(timing_table)   # number of total frames shown for this stimulus npy file
 
     stim_table = init_table(twop_frames,timing_table)
     stim_table['stim_name'] = stim_name
 
-    clip_number = -1 * np.ones((num_segment_frames,))
-    frame_in_clip = -1 * np.ones((num_segment_frames,))
-    curr_clip = 0
-    curr_frame = 0
-    for nf in range(num_segment_frames):
-        if nf == clip_end_frames[curr_clip]:
-            curr_clip += 1
-            curr_frame = 0
-            if curr_clip==num_clips:
-                break
+    # clip_number = -1 * np.ones((num_segment_frames,))
+    # frame_in_clip = -1 * np.ones((num_segment_frames,))
+    # curr_clip = 0
+    # curr_frame = 0
+    # for nf in range(num_segment_frames):
+    #     if nf == clip_end_frames[curr_clip]:
+    #         curr_clip += 1
+    #         curr_frame = 0
+    #         if curr_clip==num_clips:
+    #             break
             
-        clip_number[nf] = curr_clip
-        frame_in_clip[nf] = curr_frame
-        curr_frame += 1
+    #     clip_number[nf] = curr_clip
+    #     frame_in_clip[nf] = curr_frame
+    #     curr_frame += 1
             
     alt_session_number, segment_number, test_or_train = stim_name_parse(stim_name)
     if test_or_train=='train':
         assert session_number==alt_session_number, "session_numbers do not agree {} {}".format(session_number, alt_session_number)
+
+    if test_or_train=='test':
+        test_length = np.where(frame_array==0)[1]    # computing it this way because some sessions (8) are strange
+        trial_number = np.arange(len(frame_array))//test_length
     
     stim_table['session'] = session_number
     stim_table['session_type'] = test_or_train
     stim_table['segment_number'] = segment_number
-    stim_table['trial_number'] = clip_number
-    stim_table['frame_in_segment'] = frame_in_clip
+    stim_table['trial_number'] = trial_number
+    stim_table['frame_in_segment'] = frame_array
 
     return stim_table
     
