@@ -277,7 +277,8 @@ def TenSessions_one_segment_table(data,twop_frames,stim_name,session_number, inf
         curr_frame += 1
             
     alt_session_number, segment_number, test_or_train = stim_name_parse(stim_name)
-    assert session_number==alt_session_number, "session_numbers do not agree {} {}".format(session_number, alt_session_number)
+    if test_or_train=='train':
+        assert session_number==alt_session_number, "session_numbers do not agree {} {}".format(session_number, alt_session_number)
     
     stim_table['session'] = session_number
     stim_table['session_type'] = test_or_train
