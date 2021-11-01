@@ -6,6 +6,7 @@ Created on Mon Apr 22 17:33:28 2019
 """
 import os, sys, warnings
 import numpy as np
+from numpy.core.numeric import full
 import pandas as pd
 import matplotlib.pyplot as plt
 # from compute_session_info import compute_session_info
@@ -222,10 +223,16 @@ def TenSessions_tables(exptpath,verbose=False):
     for stim_name in stim_info.stim_name:
         stim_table[stim_name] = TenSessions_one_segment_table(data,twop_frames,stim_name,session_number, stim_info)
     
+    full_stim_table = pd.DataFrame
+    for key in stim_table:
+        full_stim_table = full_stim_table.append(stim_table[key], ignore_index=True)
+
+    full_stim_table.sort_values(by='Start')
+
     if verbose:
-        print(stim_table)
+        print(full_stim_table)
     
-    return stim_table
+    return full_stim_table
 
 
 def stim_name_parse(stim_name):
