@@ -223,7 +223,7 @@ def TenSessions_tables(exptpath,verbose=False):
     for stim_name in stim_info.stim_name:
         stim_table[stim_name] = TenSessions_one_segment_table(data,twop_frames,stim_name,session_number, stim_info)
     
-    full_stim_table = pd.DataFrame
+    full_stim_table = pd.DataFrame()
     for key in stim_table:
         full_stim_table = full_stim_table.append(stim_table[key], ignore_index=True)
 
