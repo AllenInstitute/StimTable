@@ -8,6 +8,7 @@ import os, sys, warnings
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from compute_session_info import compute_session_info
 
 from sync_py3 import Dataset
 
@@ -219,14 +220,31 @@ def TenSessions_tables(exptpath,verbose=False):
     
     stim_table = {}
     for stim_name in stim_info.stim_name:
-        stim_table[stim_name] = TenSessions_one_segment_table(data,twop_frames,stim_name,stim_info)
+        stim_table[stim_name] = TenSessions_one_segment_table(data,twop_frames,stim_name,session_number, stim_info)
     
     if verbose:
         print(stim_table)
     
     return stim_table
 
-def TenSessions_one_segment_table(data,twop_frames,stim_name,info_df):
+
+def stim_name_parse(stim_name):
+
+    stim_name = stim_name[:-4]
+    components = stim_name.split('_')
+
+    session_number = components[-2]
+    clip_number = components[-1]
+
+    if components[-3]=='test':
+        test_or_train = 'test'
+    else:
+        test_or_train = 'train'
+
+    return session_number, clip_number, test_or_train
+
+
+def TenSessions_one_segment_table(data,twop_frames,stim_name,session_number, info_df):
     
     segment_idx = get_stimulus_index_ten_session(data,stim_name) 
 
@@ -234,6 +252,8 @@ def TenSessions_one_segment_table(data,twop_frames,stim_name,info_df):
     #clip_start_frames = info_df['start_frame'].values[is_stim]
     clip_end_frames = info_df['end_frame'].values[is_stim]
     num_clips = len(is_stim)
+
+    assert num_clips==1, "num_clips is not 1 for {}".format(stim_name)
     
     timing_table = get_sweep_frames(data,segment_idx)
     num_segment_frames = len(timing_table)
@@ -256,6 +276,11 @@ def TenSessions_one_segment_table(data,twop_frames,stim_name,info_df):
         frame_in_clip[nf] = curr_frame
         curr_frame += 1
             
+    alt_session_number, clip_number, test_or_train = stim_name_parse(stim_name)
+    assert session_number==alt_session_number, "session_numbers do not agree {} {}".format(session_number, alt_session_number)
+    
+    stim_table['session'] = session_number
+    stim_table['session_type'] = test_or_train
     stim_table['clip_number'] = clip_number
     stim_table['frame_in_clip'] = frame_in_clip
 
