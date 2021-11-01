@@ -8,7 +8,7 @@ import os, sys, warnings
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from compute_session_info import compute_session_info
+# from compute_session_info import compute_session_info
 
 from sync_py3 import Dataset
 
@@ -233,8 +233,8 @@ def stim_name_parse(stim_name):
     stim_name = stim_name[:-4]
     components = stim_name.split('_')
 
-    session_number = components[-2]
-    clip_number = components[-1]
+    session_number = int(components[-2])
+    clip_number = int(components[-1])
 
     if components[-3]=='test':
         test_or_train = 'test'
