@@ -234,14 +234,14 @@ def stim_name_parse(stim_name):
     components = stim_name.split('_')
 
     session_number = int(components[-2])
-    clip_number = int(components[-1])
+    segment_number = int(components[-1])
 
     if components[-3]=='test':
         test_or_train = 'test'
     else:
         test_or_train = 'train'
 
-    return session_number, clip_number, test_or_train
+    return session_number, segment_number, test_or_train
 
 
 def TenSessions_one_segment_table(data,twop_frames,stim_name,session_number, info_df):
@@ -253,7 +253,7 @@ def TenSessions_one_segment_table(data,twop_frames,stim_name,session_number, inf
     clip_end_frames = info_df['end_frame'].values[is_stim]
     num_clips = len(is_stim)
 
-    assert num_clips==1, "num_clips is not 1 for {}".format(stim_name)
+    # assert num_clips==1, "num_clips is not 1 for {}".format(stim_name)
     
     timing_table = get_sweep_frames(data,segment_idx)
     num_segment_frames = len(timing_table)
@@ -276,13 +276,14 @@ def TenSessions_one_segment_table(data,twop_frames,stim_name,session_number, inf
         frame_in_clip[nf] = curr_frame
         curr_frame += 1
             
-    alt_session_number, clip_number, test_or_train = stim_name_parse(stim_name)
+    alt_session_number, segment_number, test_or_train = stim_name_parse(stim_name)
     assert session_number==alt_session_number, "session_numbers do not agree {} {}".format(session_number, alt_session_number)
     
     stim_table['session'] = session_number
     stim_table['session_type'] = test_or_train
-    stim_table['clip_number'] = clip_number
-    stim_table['frame_in_clip'] = frame_in_clip
+    stim_table['segment_number'] = segment_number
+    stim_table['trial_number'] = clip_number
+    stim_table['frame_in_segment'] = frame_in_clip
 
     return stim_table
     
