@@ -298,7 +298,7 @@ def TenSessions_one_segment_table(data,twop_frames,stim_name,session_number, inf
         trial_number = 0
 
     if test_or_train=='test':
-        test_length = np.where(frame_array==0)[1]    # computing it this way because some sessions (8) are strange
+        test_length = np.where(frame_array==0)[0][1]    # computing it this way because some sessions (8) are strange
         trial_number = np.arange(len(frame_array))//test_length
     
     stim_table['session'] = session_number
