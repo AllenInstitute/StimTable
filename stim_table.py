@@ -295,6 +295,7 @@ def TenSessions_one_segment_table(data,twop_frames,stim_name,session_number, inf
     alt_session_number, segment_number, test_or_train = stim_name_parse(stim_name)
     if test_or_train=='train':
         assert session_number==alt_session_number, "session_numbers do not agree {} {}".format(session_number, alt_session_number)
+        trial_number = 0
 
     if test_or_train=='test':
         test_length = np.where(frame_array==0)[1]    # computing it this way because some sessions (8) are strange
